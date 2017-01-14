@@ -1,0 +1,40 @@
+M := 100
+C := 20000
+
+X_{i, t} in N, i = 1...n, t = 1...L_i
+Y_i in N, i = 1...n
+
+E in R^{C, M}
+Wz, Rz, Wi, Ri, Wf, Rf, Wo, Ro in R^{M, M}
+bz, pi, bi, pf, bf, po, bo in R^{1, M}
+
+x_{i, t} = E_{X_{i, t}}, i = 1...n, t = 1...L_i
+
+z_{i, 1} = Tanh(x_{i, 1} . Wz + bz), i = 1...n
+ig_{i, 1} = Sigmoid(x_{i, 1} . Wi + bi), i = 1...n
+fg_{i, 1} = Sigmoid(x_{i, 1} . Wf + bf), i = 1...n
+c_{i, 1} = ig_{i, 1} * z_{i, 1}, i = 1...n
+o_{i, 1} = Sigmoid(x_{i, 1} . Wo + c_{i, 1} * po + bo), i = 1...n
+
+y_{i, t} = o_{i, t} * Tanh(c_{i, t}), i = 1...n, t = 1...L_i
+
+z_{i, t} = Tanh(x_{i, t} . Wz + y_{i, t-1} . Rz + bz), i = 1...n, t = 2...L_i
+ig_{i, t} = Sigmoid(x_{i, t} . Wi + y_{i, t-1} . Ri), i = 1...n, t = 2...L_i
+fg_{i, t} = Sigmoid(x_{i, t} . Wf + y_{i, t-1} . Rf), i = 1...n, t = 2...L_i
+c_{i, t} = ig_{i, t} * z_{i, t} + fg_{i, t} * c_{i, t-1}, i = 1...n, t = 2...L_i
+o_{i, t} = Sigmoid(x_{i, t} . Wo + y_{i, t-1} . Ro + c_{i, t} * po + bo), i = 1...n, t = 2...L_i
+
+r_i = sum_{t=1}^{L_i}{ y_{i, t} }, i = 1...n
+
+U in R^{M,2}
+b in R^{1,2}
+
+P_i = r_i . U + b, i = 1...n
+
+loss = sum_{i=1}^{n}{CrossEntropy(P_i, OneHot(Y_i, 2))}
+
+X, Y ~ "experiment/imdb/imdb.data.new"
+E, Wz, Rz, Wi, Ri, Wf, Rf, Wo, Ro, pi, pf, po, U ~ Gaussian(0, 0.1)
+bz, bi, bf, bo, b ~ Zero()
+
+min_{E, Wz, Rz, Wi, Ri, Wf, Rf, Wo, Ro, bz, pi, bi, pf, bf, po, bo, U, b} { loss }

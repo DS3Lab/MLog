@@ -1,0 +1,60 @@
+image_i in R^{3,32,32}, i=1...n
+label_i in N, i=1...n
+
+img_i = HWC(image_i), i=1...n
+lab_i = OneHot(label_i, 10), i=1...n
+
+cw1 in R^{3,3,3,300}
+cb1 in R^300
+Conv1_i = MaxPool(ReLU(Conv2d(img_i, cw1, cb1)), 2), i=1...n
+nw1 in R^{1,1,300,300}
+nb1 in R^300
+NiN1_i = ReLU(Conv2d(Conv1_i, nw1, nb1)), i=1...n
+
+cw2 in R^{3,3,300,600}
+cb2 in R^600
+Conv2_i = MaxPool(ReLU(Conv2d(NiN1_i, cw2, cb2)), 2), i=1...n
+nw2 in R^{1,1,600,600}
+nb2 in R^600
+NiN2_i = ReLU(Conv2d(Conv2_i, nw2, nb2)), i=1...n
+
+cw3 in R^{3,3,600,900}
+cb3 in R^900
+Conv3_i = MaxPool(ReLU(Conv2d(NiN2_i, cw3, cb3)), 2), i=1...n
+nw3 in R^{1,1,900,900}
+nb3 in R^900
+NiN3_i = ReLU(Conv2d(Conv3_i, nw3, nb3)), i=1...n
+
+cw4 in R^{3,3,900,1200}
+cb4 in R^1200
+Conv4_i = MaxPool(ReLU(Conv2d(NiN3_i, cw4, cb4)), 2), i=1...n
+nw4 in R^{1,1,1200,1200}
+nb4 in R^1200
+NiN4_i = ReLU(Conv2d(Conv4_i, nw4, nb4)), i=1...n
+
+cw5 in R^{3,3,1200,1500}
+cb5 in R^1500
+Conv5_i = MaxPool(ReLU(Conv2d(NiN4_i, cw5, cb5)), 2), i=1...n
+nw5 in R^{1,1,1500,1500}
+nb5 in R^1500
+NiN5_i = ReLU(Conv2d(Conv5_i, nw5, nb5)), i=1...n
+
+flat_i = Flatten(NiN5_i), i=1...n
+
+fw in R^{1500,1500}
+fb in R^{1,1500}
+fc_i = ReLU(flat_i . fw + fb), i=1...n
+
+pw in R^{1500,10}
+pb in R^{1,10}
+pred_i = fc_i . pw + pb, i=1...n
+
+loss = sum_{i=1}^{n}{ CrossEntropy(pred_i, lab_i) }
+
+image, label ~ "experiment/cifar10/cifar10.data"
+cw1, cw2, cw3, cw4, cw5, nw1, nw2, nw3, nw4, nw5, fw ~ Gaussian(0.0, 0.03)
+pw ~ Gaussian(0.0, 0.1)
+cb1, cb2, cb3, cb4, cb5, nb1, nb2, nb3, nb4, nb5, fb, pb ~ Zero()
+
+min_{cw1,cw2,cw3,cw4,cw5,cb1,cb2,cb3,cb4,cb5,nw1,nw2,nw3,nw4,nw5,nb1,nb2,nb3,nb4,nb5,fw,fb,pw,pb}{ loss }
+

@@ -1,0 +1,13 @@
+X_i in R^N, i = 1...n
+Y_i in R^1, i = 1...n
+
+W in R^{N,1}	
+b in R
+
+loss = sum_{i=1}^{n}{Hinge(Y_i * (X_i . W + b))}
+
+X, Y ~ "experiment/epsilon/epsilon.data"
+W ~ Gaussian(0.0, 0.03)
+b ~ Zero()
+
+min_{W, b}{ loss }
